@@ -32,7 +32,7 @@ namespace Bento
                 .AddSingleton(Commands)
                 .BuildServiceProvider();
 
-            string botToken = "NDc2NTM1ODk5MDk4NzEwMDI5.DkvOSg.rU2IfaPepodWvLgcCPYhwRpPOFw";
+            string botToken = "NDc2NTM1ODk5MDk4NzEwMDI5.DkvBvA.8oykyqQ4i1S9Z6ofC1CmsjhUtU4";
 
             //event subscription
 

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Bento.Modules
 {
-    [Group("tb")]
+    
     public class tb:ModuleBase<SocketCommandContext>
     {
 
@@ -22,14 +22,26 @@ namespace Bento.Modules
         //contains the correct wire value
         private static int correct;
         //default user 
-        private static string user = "";
+        private static string user;
         private static Timer muteTime;
-        
+        [Command("tb")]
+        public async Task BombSet()
+        {
+            user = Context.User.Mention;
+            string wireString = String.Join(", ", randomWires);
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.AddField($"Bomb has been planted",
+                $"Bento bot stuffs the bomb into {user}'s pants.  The display reads {time} seconds." +
+                $"Diffuse the bomb by cutting the correct wire.There are {randomWires.Length} wires.They are {wireString}.");
+
+            embed.WithColor(Color.Red);
+            
+            await ReplyAsync("", false, embed.Build());
+        }
+        [Command("tb")]
         public async Task BombSet(string user1)
         {
-            
-            if (user1 == null) user = Context.User.Mention;
-            
+            user = user1;
             string wireString = String.Join(", ", randomWires);
             EmbedBuilder embed = new EmbedBuilder();
             embed.AddField($"Bomb has been planted",
