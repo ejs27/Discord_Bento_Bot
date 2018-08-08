@@ -53,57 +53,41 @@ namespace Bento.Modules
             await ReplyAsync("", false, embed.Build());
         }
 
+
+
         public static string[] RandomWires()
         {
+            Random random = new Random();
+            int maxNum = 7;
+            int num = random.Next(1, maxNum);
             string[] colorList = new string[] {"Lavender", "Chartreuse", "Amber",
             "Amethyst", "Apricot", "Aquamarine", "Beige", "Black", "Blue", "Brown", "Cerise",
             "Champagne", "Emerald", "Gold", "Maroon", "Navy Blue",  "Poop", "Purple", "Red", "Ruby", "Salmon",
             "Sangria", "Sapphire", "Scarlet", "Silver", "Spring Bud", "Tan", "Teal", "Violet",
             "White", "Yellow"};
+            int wireNum = random.Next(0, colorList.Length);
+            string[] randomWires = new string[num];
 
-
-            int wireNum = 2;
-            string[] randomWires = new string[wireNum];
-            int randomWire = random.Next(0,1);
-            Dictionary<int, int> dict = new Dictionary<int, int>();
-            int co = 0;
-            for (int i = 0; i < wireNum; i++) {
-                //do { 
-                //    int randomWire = random.Next(0, 5);
-                //    Console.WriteLine("Random: " + randomWire);
-                //    Console.WriteLine("Values: " + String.Join(",", dict.Values));
-                //    co++;
-                //}
+            for (int i = 0; i < num; i++)
+            {
+                wireNum = random.Next(0, colorList.Length);
                 if (i == 0)
                 {
-                    dict.Add(0, randomWire);
+                    randomWires[i] = colorList[wireNum];
                 }
                 else
                 {
-                    randomWire = random.Next(0, 1);
-                    while (!dict.Values.All(x => x != randomWire))
+                    while (randomWires.Contains(colorList[wireNum]))
                     {
-                        randomWire = random.Next(0, 1);
-                        Console.WriteLine("Random: " + randomWire);
-                        Console.WriteLine("Values: " + String.Join(",", dict.Values));
-                        co++;
+                        wireNum = random.Next(0, colorList.Length);
                     }
-                    
-                    dict.Add(i, randomWire);
+                    randomWires[i] = colorList[wireNum];
                 }
             }
-            
-            foreach (int num in dict.Values){
-                int count = 0;
-                randomWires[count] = colorList[num];
-                count++;
-                Console.WriteLine(String.Join(",", randomWires));
-                Console.WriteLine(colorList[num]);
-            }
             Array.Sort(randomWires);
-
             return randomWires;
 
+        
         }
 
         
