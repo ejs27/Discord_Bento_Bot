@@ -11,8 +11,10 @@ namespace Bento.Modules
     {
         [Command("Bento")]
 
-        public async Task PingAsync()
+        public async Task userMatch(string user)
         {
+            Console.WriteLine(Context.Message); 
+            
             await ReplyAsync("Bento");
         }
     }
