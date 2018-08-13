@@ -85,7 +85,6 @@ namespace Bento.Modules
             {
                 Console.WriteLine("correct");
                 correctAnswer = true;
-                
             }
 
             if (correctAnswer){
@@ -112,9 +111,12 @@ namespace Bento.Modules
         public async void BombGoesOff(IGuild guild, IUser user)
         {
             Console.WriteLine("bombGoesOff");
+            bombTime.Stop();
+            //set mute timer between 30 and 120 seconds and message channel
             int muteSec = random.Next(30, 120);
             Mute(muteSec, currentGuild, user);
             await ReplyAsync($"**BOOOOOOOOM** {user} has been muted for {muteSec} seconds");
+            
         }
 
         //mute user
@@ -127,12 +129,9 @@ namespace Bento.Modules
             //await (user as IGuildUser).ModifyAsync(x => x.Mute = true);
             Console.WriteLine("role?");     
             //start timer for the length of the mute
-            //muteTime = new Timer(muteSec * 1000);
-            muteTime = new Timer(5000);
+            muteTime = new Timer(muteSec * 1000);
             muteTime.Start();
-            muteTime.Elapsed += HandleTimerElapsed;
-                        
-            
+            muteTime.Elapsed += HandleTimerElapsed;            
         }
         //unmute
         public async void HandleTimerElapsed(object sender, ElapsedEventArgs e)
