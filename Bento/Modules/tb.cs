@@ -29,9 +29,19 @@ namespace Bento.Modules
 
 
         [Command("tb")]
-        public async Task BombSet()
+        public async Task BombSet(string user1 = "", [Remainder] string remainder = "")
         {
-            user = Context.Message.Author;
+            if (user1 == "")
+            {
+                user = Context.Message.Author;
+            }
+            else
+            {
+                user1 = user1.Insert(2, "!");
+                user = Context.Guild.Users.FirstOrDefault(x => x.Mention == user1);
+            }
+
+
             currentGuild = Context.Guild;
             time = random.Next(15, 40);
             randomWires = RandomWires();
@@ -42,72 +52,26 @@ namespace Bento.Modules
                 $"Diffuse the bomb by cutting the correct wire.There are {randomWires.Length} wires.They are {wireString}.");
 
             embed.WithColor(Color.Red);
-            Console.WriteLine(randomWires[correct]);
-            Console.WriteLine("bomb Timer setting");
-
-            //bomb timer start
             bombTime = new Timer(time * 1000);
+            Console.WriteLine("bomb start?");
             bombTime.Start();
-            //bomb timer hits 0
             bombTime.Elapsed += bombTimeHandle;
-            await ReplyAsync("", false, embed.Build());
-        }
 
+
+            await ReplyAsync("", false, embed.Build());
+            
+        }
         
-        [Command("tb")]
-        public async Task BombSet(SocketGuildUser user1)
-        {
-            user = user1;
-            currentGuild = Context.Guild;
-            time = random.Next(15, 40);
-            randomWires = RandomWires();
-            string wireString = String.Join(", ", randomWires);
-            EmbedBuilder embed = new EmbedBuilder();
-            embed.AddField($"Bomb has been planted",
-                $"Bento bot stuffs the bomb into {user.Mention}'s pants.  The display reads {time} seconds." +
-                $"Diffuse the bomb by cutting the correct wire.There are {randomWires.Length} wires.They are {wireString}.");
-
-            embed.WithColor(Color.Red);
-            bombTime = new Timer(time * 1000);
-            Console.WriteLine("bomb start?");
-            bombTime.Start();
-            bombTime.Elapsed += bombTimeHandle;
-
-
-            await ReplyAsync("", false, embed.Build());
-        }
-        //does the same thing as above but allows additional comments after the mention
-        [Command("tb")]
-        public async Task BombSet(SocketGuildUser user1, [Remainder] string remainder)
-        {
-            user = user1;
-            currentGuild = Context.Guild;
-            time = random.Next(15, 40);
-            randomWires = RandomWires();
-            string wireString = String.Join(", ", randomWires);
-
-            EmbedBuilder embed = new EmbedBuilder();
-            embed.AddField($"Bomb has been planted",
-                $"Bento bot stuffs the bomb into {user.Mention}'s pants.  The display reads {time} seconds." +
-                $"Diffuse the bomb by cutting the correct wire.There are {randomWires.Length} wires.They are {wireString}.");
-
-            embed.WithColor(Color.Red);
-            bombTime = new Timer(time * 1000);
-            Console.WriteLine("bomb start?");
-            bombTime.Start();
-            bombTime.Elapsed += bombTimeHandle;
-
-            await ReplyAsync("", false, embed.Build());
-        }
-
-
         [Command("cut")]
         public async Task TimeBomb(string answer)
         {
+            if (user == null)
+            {
+                user = Context.Message.Author;
+            }
             //true if answer was correct
             bool correctAnswer = false;
             Console.WriteLine(correct);
-            
             Console.WriteLine(randomWires[0]);
             Console.WriteLine(randomWires[correct]);
             Console.WriteLine(answer);
@@ -156,34 +120,26 @@ namespace Bento.Modules
         //mute user
         public async void Mute(int muteSec, IGuild guild, IUser user)
         {
-            //MUTE USER HERE
-            var role1 = Context.Guild.Roles;
+            //Find mute role by its name and assign the role to the user
             var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Muted");
-            var roleEvery = Context.Guild.Roles.FirstOrDefault(x => x.Name == "@everyone");
             await (user as IGuildUser).AddRoleAsync(role);
-            //await (user as IGuildUser).RemoveRoleAsync(roleEvery);
-            var botPermission = Context.Client;
             
-
-            //var perma = (user as IGuildUser).AddRoleAsync(role);
-
             //await (user as IGuildUser).ModifyAsync(x => x.Mute = true);
             Console.WriteLine("role?");     
             //start timer for the length of the mute
-            muteTime = new Timer(muteSec * 1000);
+            //muteTime = new Timer(muteSec * 1000);
+            muteTime = new Timer(5000);
             muteTime.Start();
             muteTime.Elapsed += HandleTimerElapsed;
-
-            
+                        
             
         }
         //unmute
         public async void HandleTimerElapsed(object sender, ElapsedEventArgs e)
         {
+            //stop the timer
             muteTime.Stop();
-            // UNMUTE USER
-            var roleEvery = Context.Guild.Roles.FirstOrDefault(x => x.Name == "@everyone");
-            //await (user as IGuildUser).AddRoleAsync(roleEvery);
+            //find the role 
             var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Muted");
             await (user as IGuildUser).RemoveRoleAsync(role);
             
