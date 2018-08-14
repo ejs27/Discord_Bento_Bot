@@ -58,19 +58,27 @@ namespace Bento.Modules
 
 
             await ReplyAsync("", false, embed.Build());
-            
+
         }
-        
+
         [Command("cut")]
         public async Task TimeBomb([Remainder] string answer)
         {
             try
             {
+                /*
                 if (user == null)
                 {
                     user = Context.Message.Author;
                 }
-                //true if answer was correct
+                */
+
+                //if user is not the person who is being bombed, ignore
+                if(user.Id != Context.Message.Author.Id)
+                {
+                    return;
+                }
+                //true if the answer is correct
                 bool correctAnswer = false;
 
                 if (answer == null)
@@ -78,7 +86,7 @@ namespace Bento.Modules
                     Console.WriteLine("Select a color or its number");
                     return;
                 }
-                else if (answer ==randomWires[correct])
+                else if (answer == randomWires[correct])
                 {
                     Console.WriteLine("correct");
                     correctAnswer = true;
@@ -90,15 +98,19 @@ namespace Bento.Modules
 
                 if (correctAnswer)
                 {
-
                     bombTime.Stop();
                     await ReplyAsync("Bomb has been diffused");
-                    return;
+                    //reset bomb
+                    randomWires = new string[0];
                 }
                 else
                 {   //mute for a certain time
                     BombGoesOff(currentGuild, user);
+                    //reset bomb
+                    randomWires = new string[0];
                 }
+                
+                
             }
             catch (FormatException e)
             {
@@ -130,7 +142,7 @@ namespace Bento.Modules
             int muteSec = random.Next(30, 120);
             Mute(muteSec, currentGuild, user);
             await ReplyAsync($"**BOOOOOOOOM** {user} has been muted for {muteSec} seconds");
-            
+
         }
 
         //mute user
@@ -139,13 +151,13 @@ namespace Bento.Modules
             //Find mute role by its name and assign the role to the user
             var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Muted");
             await (user as IGuildUser).AddRoleAsync(role);
-            
+
             //await (user as IGuildUser).ModifyAsync(x => x.Mute = true);
-            Console.WriteLine("role?");     
+            Console.WriteLine("role?");
             //start timer for the length of the mute
             muteTime = new Timer(muteSec * 1000);
             muteTime.Start();
-            muteTime.Elapsed += HandleTimerElapsed;            
+            muteTime.Elapsed += HandleTimerElapsed;
         }
         //activates when mute timer goes off and unmute
         public async void HandleTimerElapsed(object sender, ElapsedEventArgs e)
@@ -197,11 +209,5 @@ namespace Bento.Modules
             Array.Sort(randomWires);
             return randomWires;
         }
-
-        
-
-
-        
-
     }
 }
