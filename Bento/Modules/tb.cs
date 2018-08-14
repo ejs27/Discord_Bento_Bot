@@ -18,7 +18,7 @@ namespace Bento.Modules
         //time set for the user to answer
         private static int time = 0;
         //sets wires used in the bomb
-        private static string[] randomWires = new string[] { "Poop" };
+        private static string[] randomWires;
         //contains the correct wire value
         private static int correct;
         //default user 
@@ -53,7 +53,6 @@ namespace Bento.Modules
 
             embed.WithColor(Color.Red);
             bombTime = new Timer(time * 1000);
-            Console.WriteLine("bomb start?");
             bombTime.Start();
             bombTime.Elapsed += bombTimeHandle;
 
@@ -63,51 +62,66 @@ namespace Bento.Modules
         }
         
         [Command("cut")]
-        public async Task TimeBomb(string answer)
+        public async Task TimeBomb([Remainder] string answer)
         {
-            if (user == null)
+            try
             {
-                user = Context.Message.Author;
-            }
-            //true if answer was correct
-            bool correctAnswer = false;
-            Console.WriteLine(correct);
-            Console.WriteLine(randomWires[0]);
-            Console.WriteLine(randomWires[correct]);
-            Console.WriteLine(answer);
+                if (user == null)
+                {
+                    user = Context.Message.Author;
+                }
+                //true if answer was correct
+                bool correctAnswer = false;
 
-            if (answer == null)
+                if (answer == null)
+                {
+                    Console.WriteLine("Select a color or its number");
+                    return;
+                }
+                else if (answer ==randomWires[correct])
+                {
+                    Console.WriteLine("correct");
+                    correctAnswer = true;
+                }
+                else if (Convert.ToInt32(answer) - 1 == correct)
+                {
+                    correctAnswer = true;
+                }
+
+                if (correctAnswer)
+                {
+
+                    bombTime.Stop();
+                    await ReplyAsync("Bomb has been diffused");
+                    return;
+                }
+                else
+                {   //mute for a certain time
+                    BombGoesOff(currentGuild, user);
+                }
+            }
+            catch (FormatException e)
             {
-                Console.WriteLine("Select a color or its number");
-                return;
-            }
-            else if (answer.Equals(randomWires[correct]) || Convert.ToInt32(answer) - 1 == correct)
-            {
-                Console.WriteLine("correct");
-                correctAnswer = true;
-            }
-
-            if (correctAnswer){
-
-                bombTime.Stop();
-                await ReplyAsync("Bomb has been diffused");
-                return;
-            }
-            else
-            {   //mute for a certain time
+                Console.WriteLine(e.Message);
                 BombGoesOff(currentGuild, user);
-               
+                bombTime.Stop();
+            }
+            //when bomb hasn't been planted, message channel to set a bomb
+            catch (Exception e)
+            {
+                await ReplyAsync("You must plant a bomb first");
+                Console.WriteLine(e.Message);
             }
         }
+        //activates when bomb timer goes off
         private void bombTimeHandle(object sender, ElapsedEventArgs e)
         {
-            
             Console.WriteLine("bomeTimeHandle");
             BombGoesOff(currentGuild, user);
             bombTime.Stop();
         }
 
-
+        //sets mute timer and send bomb explosion message to the channel
         public async void BombGoesOff(IGuild guild, IUser user)
         {
             Console.WriteLine("bombGoesOff");
@@ -133,7 +147,7 @@ namespace Bento.Modules
             muteTime.Start();
             muteTime.Elapsed += HandleTimerElapsed;            
         }
-        //unmute
+        //activates when mute timer goes off and unmute
         public async void HandleTimerElapsed(object sender, ElapsedEventArgs e)
         {
             //stop the timer
@@ -141,8 +155,6 @@ namespace Bento.Modules
             //find the role 
             var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Muted");
             await (user as IGuildUser).RemoveRoleAsync(role);
-            
-
         }
 
         //sets existing wires and return in sorted order
@@ -157,7 +169,7 @@ namespace Bento.Modules
             //wires to choose from
             string[] colorList = new string[] {"Lavender", "Chartreuse", "Amber",
             "Amethyst", "Apricot", "Aquamarine", "Beige", "Black", "Blue", "Brown", "Cerise",
-            "Champagne", "Emerald", "Gold", "Maroon", "Navy Blue",  "Poop", "Purple", "Red", "Ruby", "Salmon",
+            "Champagne", "Emerald", "Gold", "Maroon", "Poop", "Purple", "Red", "Ruby", "Salmon",
             "Sangria", "Sapphire", "Scarlet", "Silver", "Spring Bud", "Tan", "Teal", "Violet",
             "White", "Yellow"};
             //pick the first wire
@@ -185,6 +197,8 @@ namespace Bento.Modules
             Array.Sort(randomWires);
             return randomWires;
         }
+
+        
 
 
         
