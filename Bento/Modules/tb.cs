@@ -24,7 +24,6 @@ namespace Bento.Modules
         //default user 
         private static SocketUser user;
         private static Timer muteTime;
-        private static IGuild currentGuild;
         private static Timer bombTime;
 
 
@@ -41,10 +40,10 @@ namespace Bento.Modules
                 user = Context.Guild.Users.FirstOrDefault(x => x.Mention == user1);
             }
 
-
-            currentGuild = Context.Guild;
             time = random.Next(15, 40);
+            //set available wires on the bomb
             randomWires = RandomWires();
+            //turn it into string to display on discord
             string wireString = String.Join(", ", randomWires);
             EmbedBuilder embed = new EmbedBuilder();
             embed.AddField($"Bomb has been planted",
@@ -52,13 +51,12 @@ namespace Bento.Modules
                 $"Diffuse the bomb by cutting the correct wire.There are {randomWires.Length} wires.They are {wireString}.");
 
             embed.WithColor(Color.Red);
+            //bomb timer starts
             bombTime = new Timer(time * 1000);
             bombTime.Start();
             bombTime.Elapsed += bombTimeHandle;
 
-
             await ReplyAsync("", false, embed.Build());
-
         }
 
         [Command("cut")]
@@ -96,6 +94,7 @@ namespace Bento.Modules
                     correctAnswer = true;
                 }
 
+                //if correct, bomb diffuesd. else, bomb explodes and mutes user
                 if (correctAnswer)
                 {
                     bombTime.Stop();
@@ -105,7 +104,7 @@ namespace Bento.Modules
                 }
                 else
                 {   //mute for a certain time
-                    BombGoesOff(currentGuild, user);
+                    BombGoesOff(user);
                     //reset bomb
                     randomWires = new string[0];
                 }
@@ -115,7 +114,7 @@ namespace Bento.Modules
             catch (FormatException e)
             {
                 Console.WriteLine(e.Message);
-                BombGoesOff(currentGuild, user);
+                BombGoesOff(user);
                 bombTime.Stop();
             }
             //when bomb hasn't been planted, message channel to set a bomb
@@ -129,24 +128,24 @@ namespace Bento.Modules
         private void bombTimeHandle(object sender, ElapsedEventArgs e)
         {
             Console.WriteLine("bomeTimeHandle");
-            BombGoesOff(currentGuild, user);
+            BombGoesOff(user);
             bombTime.Stop();
         }
 
         //sets mute timer and send bomb explosion message to the channel
-        public async void BombGoesOff(IGuild guild, IUser user)
+        public async void BombGoesOff(IUser user)
         {
             Console.WriteLine("bombGoesOff");
             bombTime.Stop();
             //set mute timer between 30 and 120 seconds and message channel
             int muteSec = random.Next(30, 120);
-            Mute(muteSec, currentGuild, user);
+            Mute(muteSec, user);
             await ReplyAsync($"**BOOOOOOOOM** {user} has been muted for {muteSec} seconds");
 
         }
 
         //mute user
-        public async void Mute(int muteSec, IGuild guild, IUser user)
+        public async void Mute(int muteSec, IUser user)
         {
             //Find mute role by its name and assign the role to the user
             var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Muted");
