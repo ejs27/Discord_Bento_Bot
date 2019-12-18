@@ -32,7 +32,8 @@ namespace Bento
                 .AddSingleton(Commands)
                 .BuildServiceProvider();
 
-            string botToken = "NDc2NTM1ODk5MDk4NzEwMDI5.DkvBvA.8oykyqQ4i1S9Z6ofC1CmsjhUtU4";
+            //token to link to specific bot
+            string botToken = "NDc2NTM1ODk5MDk4NzEwMDI5.DlCiuA.dykBwXg44M3_Ud3Efs4BzTz17kQ";
 
             //event subscription
 
@@ -51,6 +52,7 @@ namespace Bento
 
         }
 
+        //When new user joins, say welcome
         private async Task AnnounceUserJoined(SocketGuildUser user)
         {
             var guild = user.Guild;
@@ -58,6 +60,7 @@ namespace Bento
             await channel.SendMessageAsync($"Welcome, {user.Mention}");
         }
 
+        //Logs messages sent to bot
         private Task Log(LogMessage arg)
         {
             Console.WriteLine(arg);
@@ -71,9 +74,9 @@ namespace Bento
 
             await Commands.AddModulesAsync(Assembly.GetEntryAssembly());
 
-
         }
 
+        //check messages sent. If a message starts with "!", process the message. If not, ignore.
         private async Task HandleCommandAsync(SocketMessage arg)
         {
             var message = arg as SocketUserMessage;
@@ -82,15 +85,13 @@ namespace Bento
 
             int argPos = 0;
 
+            //if message starts with "!"
             if (message.HasStringPrefix("!", ref argPos) || message.HasMentionPrefix(Client.CurrentUser, ref argPos)){
                 var context = new SocketCommandContext(Client, message);
 
                 var result = await Commands.ExecuteAsync(context, argPos, Service);
 
-                if (!result.IsSuccess)
-                {
-                    Console.WriteLine(result.Error);
-                }
+                if (!result.IsSuccess)Console.WriteLine(result.Error);
             }
 
         }
