@@ -33,6 +33,12 @@ namespace Bento.Modules
         [Command("tb")]
         public async Task BombSet(string user1 = "", [Remainder] string remainder = "")
         {
+            //if a bomb has already been set, do not allow another bomb to be set
+            if (isBombSet)
+            {
+                await ReplyAsync("Bomb has already been planted");
+                return;
+            }
             //check if a specific user is bombed.
             if (user1 == "")
             {
@@ -46,7 +52,7 @@ namespace Bento.Modules
 
             //check if mentioned user is online or a bot
             if (user.Status == UserStatus.Offline) {
-                await ReplyAsync("User must be online", false);
+                await ReplyAsync("User must be online");
                 return;
             };
             //sets a random time for the user to select the cable to cut and prompt the user with selection of cables.
@@ -64,7 +70,7 @@ namespace Bento.Modules
             bombTime.Start();
             bombTime.Elapsed += bombTimeHandle;
             isBombSet = true;
-            Console.WriteLine(user + " has set off the bomb. The answer is" + (correct + 1) + "." + correctWire);
+            Console.WriteLine($"{user} has set off the bomb. The answer is {(correct + 1)}. correctWire");
             await ReplyAsync("", false, embed.Build());
             
         }
@@ -79,7 +85,7 @@ namespace Bento.Modules
             //check if bomb has been planted. Prompt to set bomb if it has not.
             if (!isBombSet)
             {
-                await ReplyAsync("bomb has not been set. \"!tb\" to set a bomb", false);
+                await ReplyAsync("bomb has not been set. \"!tb\" to set a bomb");
                 return;
             }
                         
@@ -89,7 +95,7 @@ namespace Bento.Modules
                 //if the answer is not provided
                 if (answer.Length == 0)
                 {
-                    await ReplyAsync("Select a color or its number", false);
+                    await ReplyAsync("Select a color or its number");
                     return;
                 }
                 //check if the user's answer is correct.
@@ -139,7 +145,6 @@ namespace Bento.Modules
             int muteSec = random.Next(30, 120);
             Mute(muteSec, currentGuild, user);
             await ReplyAsync($"**BOOOOOOOOM** {user.Mention} has been muted for {muteSec} seconds");
-            isBombSet = false;
             
         }
 
@@ -163,6 +168,8 @@ namespace Bento.Modules
             //find the mute role 
             var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Muted");
             await (user as IGuildUser).RemoveRoleAsync(role);
+            isBombSet = false;
+            await ReplyAsync($"You may now speak {user.Mention}" );
         }
 
         //sets existing wires and return in sorted order
