@@ -27,6 +27,7 @@ namespace Bento.Modules
         private static Timer muteTime;
         private static IGuild currentGuild;
         private static Timer bombTime;
+        private static Boolean isBombSet = false;
 
         //"!tb" initiates for time bomb game. A user ID can be followed to select the person to bomb. If user ID is missing, time bomb the initated user
         [Command("tb")]
@@ -51,12 +52,13 @@ namespace Bento.Modules
             EmbedBuilder embed = new EmbedBuilder();
             embed.AddField($"Bomb has been planted",
                 $"Bento bot stuffs the bomb into {user.Mention}'s pants.  The display reads {time} seconds. " +
-                $"Diffuse the bomb by cutting the correct wire.There are {randomWires.Length} wires.They are {wireString}.");
+                $"Diffuse the bomb by cutting the correct wire.There are **{randomWires.Length}** wires.They are **{wireString}**.");
 
             embed.WithColor(Color.Red);
             bombTime = new Timer(time * 1000);
             bombTime.Start();
             bombTime.Elapsed += bombTimeHandle;
+            isBombSet = true;
 
             await ReplyAsync("", false, embed.Build());
             
@@ -68,8 +70,16 @@ namespace Bento.Modules
         [Command("cut")]
         public async Task TimeBomb([Remainder] string answer)
         {
+
+            //check if bomb has been planted. Prompt to set bomb if it has not.
+            if (!isBombSet)
+            {
+                await ReplyAsync("bomb has not been set. \"!tb\" to set a bomb", false);
+                return;
+            }
             //select the correct wire color
             correctWire = randomWires[correct];
+            
             try
             {
                 //if user was not selected, bomb the user who called bomb
@@ -101,6 +111,7 @@ namespace Bento.Modules
                 {
 
                     bombTime.Stop();
+                    isBombSet = false;
                     await ReplyAsync("Bomb has been diffused");
                     return;
                 }
@@ -114,10 +125,9 @@ namespace Bento.Modules
                 Console.WriteLine(e.Message);
                 BombGoesOff(currentGuild, user);
             }
-            //when bomb hasn't been planted, message channel to set a bomb
             catch (Exception e)
             {
-                await ReplyAsync("You must plant a bomb first");
+                await ReplyAsync(e.Message, false);
                 
                 Console.WriteLine(e.Message);
             }
@@ -137,7 +147,8 @@ namespace Bento.Modules
             //set mute timer between 30 and 120 seconds and message channel
             int muteSec = random.Next(30, 120);
             Mute(muteSec, currentGuild, user);
-            await ReplyAsync($"**BOOOOOOOOM** {user} has been muted for {muteSec} seconds");
+            await ReplyAsync($"**BOOOOOOOOM** {user.Mention} has been muted for {muteSec} seconds");
+            isBombSet = false;
             
         }
 
