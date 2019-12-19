@@ -27,7 +27,7 @@ namespace Bento.Modules
         private static Timer muteTime;
         private static IGuild currentGuild;
         private static Timer bombTime;
-        private static Boolean isBombSet = false;
+        private static bool isBombSet = false;
 
         //"!tb" initiates for time bomb game. A user ID can be followed to select the person to bomb. If user ID is missing, time bomb the initated user
         [Command("tb")]
@@ -40,10 +40,15 @@ namespace Bento.Modules
             }
             else
             {
-                user1 = user1.Insert(2, "!");
+                user1 = user1.Insert(2, "");
                 user = Context.Guild.Users.FirstOrDefault(x => x.Mention == user1);
             }
 
+            //check if mentioned user is online or a bot
+            if (user.Status == UserStatus.Offline) {
+                await ReplyAsync("User must be online", false);
+                return;
+            };
             //sets a random time for the user to select the cable to cut and prompt the user with selection of cables.
             currentGuild = Context.Guild;
             time = random.Next(15, 40);
@@ -59,7 +64,7 @@ namespace Bento.Modules
             bombTime.Start();
             bombTime.Elapsed += bombTimeHandle;
             isBombSet = true;
-
+            Console.WriteLine(user + " has set off the bomb. The answer is" + (correct + 1) + "." + correctWire);
             await ReplyAsync("", false, embed.Build());
             
         }
@@ -68,7 +73,7 @@ namespace Bento.Modules
         /*user who has been chosen can answer to cut the bomb before it goes off. The user must answer with "!cut {color}" in order to cut.
         Wrong answer will result in bomb going off*/
         [Command("cut")]
-        public async Task TimeBomb([Remainder] string answer)
+        public async Task TimeBomb(string answer = "", [Remainder] string remainder = "")
         {
 
             //check if bomb has been planted. Prompt to set bomb if it has not.
@@ -77,22 +82,14 @@ namespace Bento.Modules
                 await ReplyAsync("bomb has not been set. \"!tb\" to set a bomb", false);
                 return;
             }
-            //select the correct wire color
-            correctWire = randomWires[correct];
-            
+                        
             try
-            {
-                //if user was not selected, bomb the user who called bomb
-                if (user == null)
-                {
-                    user = Context.Message.Author;
-                }
-                
+            {               
                 bool correctAnswer = false;
-                //if the answer is not one of the
-                if (answer == null)
+                //if the answer is not provided
+                if (answer.Length == 0)
                 {
-                    Console.WriteLine("Select a color or its number");
+                    await ReplyAsync("Select a color or its number", false);
                     return;
                 }
                 //check if the user's answer is correct.
@@ -101,15 +98,14 @@ namespace Bento.Modules
                     Console.WriteLine("correct");
                     correctAnswer = true;
                 }
-                //check if the answer given was in numbers. If not, throw FormatException and bomb goes off.
-                else if (Convert.ToInt32(answer) - 1 == correct)
-                {
+                //check if the answer given was in numbers.
+                else if (int.TryParse(answer, out _) && (Convert.ToInt32(answer) - 1 == correct))
+                {                    
                     correctAnswer = true;
                 }
                 //if the user answered correctly, diffuse bomb.
                 if (correctAnswer)
                 {
-
                     bombTime.Stop();
                     isBombSet = false;
                     await ReplyAsync("Bomb has been diffused");
@@ -117,13 +113,8 @@ namespace Bento.Modules
                 }
                 else
                 {   //mute for a certain time
-                    BombGoesOff(currentGuild, user);
+                    BombGoesOff();
                 }
-            }
-            catch (FormatException e)
-            {
-                Console.WriteLine(e.Message);
-                BombGoesOff(currentGuild, user);
             }
             catch (Exception e)
             {
@@ -136,11 +127,11 @@ namespace Bento.Modules
         private void bombTimeHandle(object sender, ElapsedEventArgs e)
         {
             Console.WriteLine("bomeTimeHandle");
-            BombGoesOff(currentGuild, user);
+            BombGoesOff();
         }
 
         //sets mute timer and send bomb explosion message to the channel
-        public async void BombGoesOff(IGuild guild, IUser user)
+        public async void BombGoesOff()
         {
             Console.WriteLine("bombGoesOff");
             bombTime.Stop();
@@ -159,8 +150,6 @@ namespace Bento.Modules
             var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Muted");
             await (user as IGuildUser).AddRoleAsync(role);
             
-            //await (user as IGuildUser).ModifyAsync(x => x.Mute = true);
-            Console.WriteLine("role?");     
             //start timer for the length of the mute
             muteTime = new Timer(muteSec * 1000);
             muteTime.Start();
@@ -215,6 +204,8 @@ namespace Bento.Modules
             }
             //sort the wires in alphabetical order
             Array.Sort(randomWires);
+            //select the correct wire color
+            correctWire = randomWires[correct];
             return randomWires;
         }
     }
