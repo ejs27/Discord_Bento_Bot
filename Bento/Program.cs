@@ -33,7 +33,7 @@ namespace Bento
                 .BuildServiceProvider();
 
             //token to link to specific bot
-            string botToken = "NDc2NTM1ODk5MDk4NzEwMDI5.DlCiuA.dykBwXg44M3_Ud3Efs4BzTz17kQ";
+            string botToken = "NDc2NTM1ODk5MDk4NzEwMDI5.Xfsa4g.GJkoRHGXOZC76_2LgZWI6kwkFZc";
 
             //event subscription
 

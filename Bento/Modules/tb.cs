@@ -68,7 +68,7 @@ namespace Bento.Modules
             bombTime.Start();
             bombTime.Elapsed += bombTimeHandle;
             isBombSet = true;
-            Console.WriteLine($"{user} has set off the bomb. The answer is {(correct + 1)}. correctWire");
+            Console.WriteLine($"{user} has set off the bomb. The answer is {(correct + 1)}. {correctWire}");
             await ReplyAsync("", false, embed.Build());
             
         }
